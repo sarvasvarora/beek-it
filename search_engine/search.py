@@ -1,4 +1,5 @@
 from typing import List
+import re
 from collections import defaultdict
 from search_engine.utils.xml_parser import XmlParser
 from search_engine.utils.web_graph import WebGraph
@@ -30,7 +31,7 @@ class SearchEngine(object):
         # Index the current URL
         words = self.parser.get_content(url)
         for word in words:
-            self.add_word_to_index(word.lower(), url)
+            self.add_word_to_index(word, url)
 
         # Crawl the web by visiting the links pointed to by the current URL
         links = self.parser.get_links(url)
@@ -79,8 +80,31 @@ class SearchEngine(object):
                 prV[i] = new_prV[i]
                 self.internet.set_page_rank(self.internet.get_vertices()[i], new_prV[i])
 
-    def get_results(self, query: str) -> List[str]:
-        urls = self.word_index[query.lower()]
+    def query(self, query: str, phrase_query: bool = False) -> List[str]:
+        words = [word.strip(' ,.\n;:\'\"\t!@#$%^&*()_-=+[]?<>').lower() for word in query.split()]
+        words = [word for word in words if word != '']
+        urls = self.word_index[words[0]] # Initialize urls 
+
+        if phrase_query is False:
+            for word in words:
+                tmp_urls = self.word_index[word]
+                urls = list(set(urls + tmp_urls)) # Take union
+        else:
+            for word in words:
+                tmp_urls = self.word_index[word]
+                urls = list(filter((lambda x: x in tmp_urls), urls)) # Take intersection
+
+                # break if at any point the intersection becomes empty. Reduces unnecessary computation
+                if urls == []: 
+                    break
+            
+            phrase = ' '.join(words)
+
+            for url in urls:
+                content = ' '.join(self.parser.get_content(url))
+                if re.findall(phrase, content) == []:
+                    urls.remove(url)
+
         ranks = [self.internet.get_page_rank(url) for url in urls]
         urls_with_rank = list(zip(urls, ranks))
 

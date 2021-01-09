@@ -11,5 +11,6 @@ print('RANKS ASSIGNED')
 print(s)
 print()
 print('GETTING RESULTS')
-print(s.get_results('a'))
+print(s.query('mcgill university  is one of the', phrase_query=True))
+
 

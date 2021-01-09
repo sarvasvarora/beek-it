@@ -17,6 +17,8 @@ class XmlParser(object):
     def get_content(self, url: str) -> List[str]:
         try:
             webpage = self.webpages[url]
-            return [word.strip(' ,.\n;:\'\"\t!@#$%^&*()_-=+[]?<>') for word in webpage.find('content').attrib['value'].split()]
+            content = [word.strip(' ,.\n;:\'\"\t!@#$%^&*()_-=+[]?<>') for word in webpage.find('content').attrib['value'].split()]
+            content = [word.lower() for word in content if word != '']
+            return content
         except KeyError:
             return []
