@@ -35,8 +35,7 @@ class SearchEngine(object):
         Args:
             url (str): URL of the webpage to start indexing from
         """
-        # If the vertex with the given URL already exists AND has already been
-        # visited
+        # If the vertex with the given URL already exists AND has already been visited
         if not self.internet.add_vertex(url) and self.internet.get_visited(url):
             return
 
